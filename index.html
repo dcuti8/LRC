@@ -1,0 +1,236 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>LRC 合并</title>
+
+    <style>
+        .c1 {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .s1 {
+            width: 50%;
+            margin-right: 5px;
+            height: 200px
+        }
+
+        .s1 textarea {
+            width: 100%;
+            height: 100%;
+            margin-top: 10px;
+        }
+
+        .c2 {
+            width: 90%;
+            height: 400px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>LRC 合并</h1>
+
+    <div class="c1">
+        <div class="s1">
+            <input type="file" id="f1" size="50" onchange="select1()" />
+            <textarea id="t1" placeholder="输入歌词1">
+            </textarea>
+        </div>
+        <div class="s1">
+            <input type="file" id="f2" size="50" onchange="select2()">
+            <textarea id="t2" placeholder="输入歌词2">
+            </textarea>
+        </div>
+    </div>
+    <br />
+    <br />
+    <button onclick="clickOK()">OK</button>
+    <br />
+    <br />
+    重排顺序:
+    <select name="cmb1" id="cmb1">
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+    </select>
+    <select name="cmb2" id="cmb2">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+    </select>
+    <select name="cmb3" id="cmb3">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+    </select>
+
+    <button onclick="reorder()">Reorder</button>
+    <hr />
+    <textarea id="t3" class="c2"></textarea>
+
+
+    </div>
+
+    <hr />
+    <div>
+        分離:
+        <select name="cmb4" id="cmb4">
+            <option value="odd" selected>奇數行</option>
+            <option value="even">偶數行</option>
+        </select>
+
+        <button onclick="extract()">提取</button>
+        <hr />
+        <textarea id="t4" class="c2"></textarea>
+    </div>
+
+    <script>
+        function select1() {
+            let f1 = document.getElementById("f1");
+            let files = f1.files;//获取到文件列表
+            if (files.length > 0) {
+                let reader = new FileReader();//新建一个FileReader
+                reader.readAsText(files[0], "UTF-8");//读取文件
+                reader.onload = function (evt) { //读取完文件之后会回来这里
+                    let fileString = evt.target.result; // 读取文件内容
+                    document.getElementById("t1").value = fileString
+                }
+
+            }
+        }
+
+        function select2() {
+            let f2 = document.getElementById("f2");
+            let files = f2.files;//获取到文件列表
+            if (files.length > 0) {
+                let reader = new FileReader();//新建一个FileReader
+                reader.readAsText(files[0], "UTF-8");//读取文件
+                reader.onload = function (evt) { //读取完文件之后会回来这里
+                    let fileString = evt.target.result; // 读取文件内容
+                    document.getElementById("t2").value = fileString
+                }
+
+            }
+        }
+
+        function filterItems(list, query) {
+            return list.filter(function (el) {
+                return el.toLowerCase().indexOf(query) > -1;
+            })
+        }
+
+        function extract() {
+            let or4 = document.getElementById("cmb4").selectedIndex;
+            console.log(or4)
+            
+            let str = document.getElementById("t1").value
+            let tt = str.split('\n')
+
+            let fg = ''
+            for (let i = 0; i < tt.length; i++) {
+
+                if (or4 == 0 && i % 2 == 0) {
+                    fg = fg + tt[i] + '\n'
+                }
+                if (or4 == 1 && i % 2 != 0) {
+                    fg = fg + tt[i] + '\n'
+                }
+            }
+
+            let ff = document.getElementById("t4")
+            ff.value = fg
+        }
+
+        function reorder() {
+            let or1 = document.getElementById("cmb1").selectedIndex;
+            let or2 = document.getElementById("cmb2").selectedIndex;
+            let or3 = document.getElementById("cmb3").selectedIndex;
+
+            var t1 = document.getElementById("t1");
+            var arr = t1.value.split("\n");
+
+            var s = /\[\d\d.*\]/g;
+
+            let tag0 = arr[0].match(s);
+            let temp0 = filterItems(arr, tag0)
+
+            let result = "";
+            var idx = 0
+            for (let i = 0; i < (arr.length / temp0.length); i++) {
+
+                let e = arr[idx]
+                let tag1 = e.match(s);
+
+                // console.log(i, idx, tag1)
+                let temp = filterItems(arr, tag1)
+                if (temp.length === 2) {
+                    result = result
+                        + temp[or1].trim() + "\n"
+                        + temp[or2].trim() + "\n";
+                }
+                else if (temp.length === 3) {
+                    result = result
+                        + temp[or1].trim() + "\n"
+                        + temp[or2].trim() + "\n"
+                        + temp[or3].trim() + "\n";
+                }
+
+                idx = i * temp0.length + temp0.length
+            }
+
+            var ff = document.getElementById("t3")
+            ff.value = result
+
+        }
+
+
+        function clickOK() {
+            var t1 = document.getElementById("t1");
+            var arr = t1.value.split("\n");
+
+            var t2 = document.getElementById("t2");
+            var arr2 = t2.value.split("\n");
+
+            let result = "";
+            console.log(arr)
+            console.log(arr2)
+
+
+            var s = /\[\d\d.*\]/g;
+
+            let tag0 = arr[0].match(s);
+            let temp0 = filterItems(arr, tag0)
+
+            var idx = 0
+            for (let i = 0; i < (arr.length / temp0.length); i++) {
+
+                let e = arr[idx]
+                let tag1 = e.match(s);
+
+                // console.log(i, idx, tag1)
+                let temp = filterItems(arr, tag1)
+                temp.forEach(e1 => {
+                    result = result + e1.trim() + "\n";
+                });
+
+                if (arr2[i]) {
+                    let ss = arr2[i].trim();
+                    var noTag = ss.replace(s, "")
+                    result = result + tag1 + noTag + "\n";
+                }
+
+                idx = i * temp0.length + temp0.length
+            }
+
+            var ff = document.getElementById("t3")
+            ff.value = result
+            // console.log(result)
+        }
+
+    </script>
+
+</body>
+
+</html>
